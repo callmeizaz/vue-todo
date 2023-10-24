@@ -17,6 +17,7 @@
     <!-- render todo -->
     <div class="todo-card">
       <todo-card
+        @handleEditModal="openEditModal"
         @completeTodo="markCompleted"
         v-for="todo in todos"
         :todo="todo"
@@ -27,7 +28,20 @@
     </div>
 
     <!-- Add TO-DO -->
-    <AddTodoModal :isModalOpen.sync="isModalOpen" @formSubmitted="addTodo" />
+    <TodoModal
+      :todo="selectedTodo"
+      :isEditModal.sync="isEditModal"
+      :isModalOpen.sync="isModalOpen"
+      @form-submitted="handleFormSubmission"
+    >
+      <h2 v-if="!isEditModal">Add To-do</h2>
+      <h2 v-else>Edit To-do</h2>
+      <template v-slot:button>
+        <span v-if="!selectedTodoId">Submit</span>
+        <span v-else>Edit</span>
+        <!-- Change 'Edit' to whatever you want the alternate text to be -->
+      </template>
+    </TodoModal>
   </div>
 </template>
 
@@ -35,22 +49,31 @@
 // @ is an alias to /src
 import TodoCard from "@/components/TodoCard.vue";
 // Add todo Modal
-import AddTodoModal from "./AddTodoModal.vue";
+import TodoModal from "./TodoModal.vue";
 
 export default {
   name: "todo-list",
   components: {
     TodoCard,
-    AddTodoModal,
+    TodoModal,
   },
   data() {
     return {
       todos: [],
       isModalOpen: false,
+      isEditModal: false,
+      selectedTodoId: null,
     };
   },
 
   methods: {
+    handleFormSubmission(formData) {
+      if (this.isEditModal) {
+        this.updateTodo(formData);
+      } else {
+        this.addTodo(formData);
+      }
+    },
     addTodo(formData) {
       console.log("Form data received in parent: ", formData);
       const uniqueId = `${new Date().toISOString()}`;
@@ -73,6 +96,15 @@ export default {
       // Here you can perform any logic or make an API call with the form data
     },
 
+    updateTodo(formData) {
+      console.log("form", formData);
+    },
+    openEditModal(id) {
+      console.log("edit is workin");
+      this.selectedTodoId = id;
+      this.isEditModal = true;
+    },
+
     markCompleted(id) {
       const index = this.todos.findIndex((todo) => todo.id === id);
 
@@ -83,7 +115,17 @@ export default {
       };
 
       this.$set(this.todos, index, updatedTodo);
-      console.log("id inside parent ", id);
+    },
+  },
+  computed: {
+    selectedTodo() {
+      const todoById = this.todos.find(
+        (todo) => todo.id === this.selectedTodoId
+      );
+
+      console.log("todo id", todoById);
+
+      return todoById || null;
     },
   },
 };

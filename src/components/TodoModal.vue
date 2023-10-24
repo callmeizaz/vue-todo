@@ -1,11 +1,11 @@
 <template>
-  <div class="modal" v-if="isModalOpen">
+  <div class="modal" v-if="isModalOpen || isEditModal">
     <div class="modal-overlay" @click="closeModal"></div>
 
     <div class="modal-content">
       <button class="close-button" @click="closeModal">X</button>
+      <slot></slot>
 
-      <h2>Add To-do</h2>
       <form @submit.prevent="submitForm">
         <div class="input-field">
           <label for="description">Description:</label>
@@ -18,7 +18,9 @@
           />
         </div>
 
-        <button type="submit" class="submit-button">Submit</button>
+        <button type="submit" class="submit-button">
+          <slot name="button"></slot>
+        </button>
       </form>
     </div>
   </div>
@@ -26,8 +28,12 @@
 
 <script>
 export default {
-  name: "AddTodoModal",
+  name: "TodoModal",
   props: {
+    todo: Object,
+    isEditModal: {
+      type: Boolean,
+    },
     isModalOpen: {
       type: Boolean,
       required: true,
@@ -51,13 +57,30 @@ export default {
   methods: {
     closeModal() {
       this.$emit("update:isModalOpen", false);
+      this.$emit("update:isEditModal", false);
     },
     submitForm() {
       // Handle form submission here
       console.log("Form submitted: ", this.form);
-      this.$emit("formSubmitted", this.form); // Emitting the form data to parent
+      this.$emit("form-submitted", this.form); // Emitting the form data to parent
       this.form.description = "";
       this.closeModal();
+    },
+  },
+
+  created() {
+    console.log("todo", this.todo);
+  },
+
+  watch: {
+    // Watch the 'todo' prop for changes
+    todo: {
+      immediate: true, // This ensures the watcher is triggered upon component creation
+      handler(newVal) {
+        // When 'todo' changes, update 'form.description'
+        this.form.description =
+          newVal && newVal.description ? newVal.description : "";
+      },
     },
   },
 };

@@ -22,8 +22,10 @@
             <p v-if="todo.isCompleted">completed</p>
             <p v-else>Incomplete</p>
           </div>
-          <div class="edit">
-            <button class="edit-btn">Edit Todo</button>
+          <div class="edit" v-show="!todo.isCompleted">
+            <button class="edit-btn" @click="handleEdit(todo.id)">
+              Edit Todo
+            </button>
           </div>
         </div>
       </div>
@@ -49,6 +51,10 @@ export default {
   methods: {
     markComplete(id) {
       this.$emit("completeTodo", id);
+    },
+
+    handleEdit(id) {
+      this.$emit("handleEditModal", id);
     },
   },
 };
